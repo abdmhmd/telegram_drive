@@ -1,6 +1,12 @@
 import { create } from 'zustand';
 import { filesApi, foldersApi } from '../api';
 
+function getInitialTheme() {
+  const saved = localStorage.getItem('theme');
+  if (saved === 'dark' || saved === 'light') return saved;
+  return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+}
+
 const useStore = create((set, get) => ({
   // Auth
   token: localStorage.getItem('token') || null,
@@ -24,6 +30,10 @@ const useStore = create((set, get) => ({
   showUpload: false,
   showCreateFolder: false,
   showShare: false,
+  sidebarOpen: false,
+
+  // Theme
+  theme: getInitialTheme(),
 
   // Auth actions
   setAuth: (token, phone) => {
@@ -127,6 +137,23 @@ const useStore = create((set, get) => ({
   setShowUpload: (show) => set({ showUpload: show }),
   setShowCreateFolder: (show) => set({ showCreateFolder: show }),
   setShowShare: (show) => set({ showShare: show }),
+  setSidebarOpen: (open) => set({ sidebarOpen: open }),
+  toggleSidebar: () => set((state) => ({ sidebarOpen: !state.sidebarOpen })),
+
+  // Theme actions
+  toggleTheme: () =>
+    set((state) => {
+      const next = state.theme === 'light' ? 'dark' : 'light';
+      localStorage.setItem('theme', next);
+      document.documentElement.classList.toggle('dark', next === 'dark');
+      return { theme: next };
+    }),
+  setTheme: (theme) => {
+    localStorage.setItem('theme', theme);
+    document.documentElement.classList.toggle('dark', theme === 'dark');
+    set({ theme });
+  },
+
   clearError: () => set({ error: null }),
 
   navigateToFolder: async (folderId) => {

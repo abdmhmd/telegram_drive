@@ -21,18 +21,20 @@ export default function PreviewModal() {
 
   return (
     <div className="fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-4" onClick={() => setPreviewItem(null)}>
-      <div className="relative max-w-4xl max-h-[90vh] w-full" onClick={(e) => e.stopPropagation()}>
+      <div className="relative max-w-4xl max-h-[90vh] w-full mx-auto" onClick={(e) => e.stopPropagation()}>
         <div className="absolute top-0 right-0 z-10 flex gap-2 p-2">
           <a
             href={downloadUrl}
             download={previewItem.name}
-            className="p-2 bg-black/50 hover:bg-black/70 rounded-lg text-white transition-colors"
+            className="p-2.5 bg-black/50 hover:bg-black/70 rounded-lg text-white transition-colors"
+            aria-label="Download"
           >
             <Download className="w-5 h-5" />
           </a>
           <button
             onClick={() => setPreviewItem(null)}
-            className="p-2 bg-black/50 hover:bg-black/70 rounded-lg text-white transition-colors"
+            className="p-2.5 bg-black/50 hover:bg-black/70 rounded-lg text-white transition-colors"
+            aria-label="Close preview"
           >
             <X className="w-5 h-5" />
           </button>
@@ -43,7 +45,7 @@ export default function PreviewModal() {
             <img
               src={previewUrl}
               alt={previewItem.name}
-              className="max-w-full max-h-[85vh] object-contain rounded-lg"
+              className="w-full h-auto max-h-[85vh] object-contain rounded-lg"
               onLoad={() => setLoading(false)}
               onError={() => { setLoading(false); setError('Failed to load image'); }}
             />
@@ -51,7 +53,7 @@ export default function PreviewModal() {
             <video
               src={previewUrl}
               controls
-              className="max-w-full max-h-[85vh] rounded-lg"
+              className="w-full h-auto max-h-[85vh] rounded-lg"
               onLoadedData={() => setLoading(false)}
               onError={() => { setLoading(false); setError('Failed to load video'); }}
             >
@@ -60,7 +62,7 @@ export default function PreviewModal() {
           ) : isPdf ? (
             <iframe
               src={previewUrl}
-              className="w-full h-[85vh] rounded-lg bg-white"
+              className="w-full h-[70vh] sm:h-[85vh] rounded-lg bg-white dark:bg-gray-800"
               onLoad={() => setLoading(false)}
               onError={() => { setLoading(false); setError('Failed to load PDF'); }}
               title={previewItem.name}
@@ -75,7 +77,7 @@ export default function PreviewModal() {
               <a
                 href={downloadUrl}
                 download={previewItem.name}
-                className="inline-flex items-center gap-2 mt-4 px-4 py-2 bg-blue-600 rounded-lg hover:bg-blue-700 transition-colors"
+                className="inline-flex items-center gap-2 mt-4 px-5 py-2.5 bg-blue-600 rounded-lg hover:bg-blue-700 transition-colors min-h-[44px]"
               >
                 <Download className="w-4 h-4" /> Download
               </a>
@@ -103,7 +105,7 @@ function TextPreview({ url, onLoad, onError }) {
   }
 
   return (
-    <pre className="bg-gray-900 text-green-400 p-6 rounded-lg max-w-full max-h-[85vh] overflow-auto text-sm">
+    <pre className="bg-gray-900 dark:bg-gray-950 text-green-400 p-6 rounded-lg max-w-full max-h-[85vh] overflow-auto text-sm">
       {text}
     </pre>
   );

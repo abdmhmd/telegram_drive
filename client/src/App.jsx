@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import Setup from './pages/Setup';
 import Login from './pages/Login';
@@ -17,6 +18,17 @@ function PublicRoute({ children }) {
 }
 
 export default function App() {
+  const theme = useStore((s) => s.theme);
+
+  useEffect(() => {
+    const html = document.documentElement;
+    if (theme === 'dark') {
+      html.classList.add('dark');
+    } else {
+      html.classList.remove('dark');
+    }
+  }, [theme]);
+
   return (
     <BrowserRouter>
       <Routes>

@@ -68,18 +68,18 @@ export default function ContextMenu({ menu }) {
 
   return (
     <div
-      className="fixed z-50 bg-white rounded-xl shadow-xl border border-gray-200 py-1 min-w-[180px]"
-      style={{ left: menu.x, top: menu.y }}
+      className="fixed z-50 bg-white dark:bg-gray-900 rounded-xl shadow-xl border border-gray-200 dark:border-gray-700 py-1 min-w-[180px]"
+      style={{ left: Math.min(menu.x, window.innerWidth - 200), top: menu.y }}
       onClick={(e) => e.stopPropagation()}
     >
       {menuItems.map((item, i) => (
         <button
           key={i}
           onClick={item.action}
-          className={`w-full flex items-center gap-2.5 px-3 py-2 text-sm transition-colors ${
+          className={`w-full flex items-center gap-2.5 px-3 py-2.5 text-sm transition-colors min-h-[44px] ${
             item.danger
-              ? 'text-red-600 hover:bg-red-50'
-              : 'text-gray-700 hover:bg-gray-100'
+              ? 'text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30'
+              : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800'
           }`}
         >
           <item.icon className="w-4 h-4" />
