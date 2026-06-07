@@ -1,0 +1,54 @@
+{
+  "expo": {
+    "name": "TeleDrive",
+    "slug": "telegram-drive",
+    "version": "1.0.0",
+    "orientation": "default",
+    "scheme": "teledrive",
+    "userInterfaceStyle": "automatic",
+    "splash": {
+      "backgroundColor": "#4A90D9"
+    },
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.teledrive.app",
+      "infoPlist": {
+        "NSPhotoLibraryUsageDescription": "Allow TeleDrive to access your photo library to upload files.",
+        "NSCameraUsageDescription": "Allow TeleDrive to access your camera to take photos.",
+        "NSMicrophoneUsageDescription": "Allow TeleDrive to access your microphone for video recording."
+      }
+    },
+    "android": {
+      "adaptiveIcon": {
+        "backgroundColor": "#4A90D9"
+      },
+      "package": "com.teledrive.app",
+      "permissions": [
+        "android.permission.CAMERA",
+        "android.permission.READ_EXTERNAL_STORAGE",
+        "android.permission.WRITE_EXTERNAL_STORAGE",
+        "android.permission.RECORD_AUDIO",
+        "android.permission.MODIFY_AUDIO_SETTINGS"
+      ]
+    },
+    "plugins": [
+      "expo-secure-store",
+      "expo-document-picker",
+      "expo-image-picker",
+      [
+        "expo-audio",
+        {
+          "microphonePermission": "Allow TeleDrive to access your microphone."
+        }
+      ],
+      "expo-audio",
+      "expo-video"
+    ],
+    "extra": {
+      "apiUrl": "https://tele-drive.pxxl.click/api",
+      "eas": {
+        "projectId": "ee777ac4-39a9-42c7-a7bc-ec32d5feca36"
+      }
+    }
+  }
+}
