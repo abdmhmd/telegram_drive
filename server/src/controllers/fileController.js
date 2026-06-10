@@ -1,7 +1,7 @@
 import fs from 'fs';
 import fileManager from '../services/fileManager.js';
 import telegramService from '../services/telegram.js';
-import db from '../config/database.js';
+import { get, run } from '../config/database.js';
 import logger from '../config/logger.js';
 import { generateShareToken } from '../utils/helpers.js';
 
@@ -151,8 +151,10 @@ export async function createShareLink(req, res, next) {
       expiresAt = new Date(Date.now() + expires_in_hours * 3600000).toISOString();
     }
 
-    db.prepare('INSERT INTO shares (item_id, token, expires_at) VALUES (?, ?, ?)')
-      .run(item.id, token, expiresAt);
+    await run(
+      'INSERT INTO shares (item_id, token, expires_at) VALUES (?, ?, ?)',
+      [item.id, token, expiresAt]
+    );
 
     const shareUrl = `${req.protocol}://${req.get('host')}/api/shares/${token}`;
     res.status(201).json({ token, url: shareUrl, expires_at: expiresAt });
@@ -163,12 +165,12 @@ export async function createShareLink(req, res, next) {
 
 export async function accessShareLink(req, res, next) {
   try {
-    const share = db.prepare('SELECT * FROM shares WHERE token = ?').get(req.params.token);
+    const share = await get('SELECT * FROM shares WHERE token = ?', [req.params.token]);
     if (!share) {
       return res.status(404).json({ error: 'Share link not found' });
     }
     if (share.expires_at && new Date(share.expires_at) < new Date()) {
-      db.prepare('DELETE FROM shares WHERE id = ?').run(share.id);
+      await run('DELETE FROM shares WHERE id = ?', [share.id]);
       return res.status(410).json({ error: 'Share link has expired' });
     }
 

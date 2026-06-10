@@ -1,4 +1,4 @@
-import 'dotenv/config';
+import dotenv from 'dotenv';
 import express from 'express';
 import cors from 'cors';
 import morgan from 'morgan';
@@ -9,9 +9,13 @@ import authRoutes from './routes/auth.js';
 import fileRoutes from './routes/files.js';
 import folderRoutes from './routes/folders.js';
 import shareRoutes from './routes/shares.js';
-import db from './config/database.js';
+import { query, initializeDatabase, testDatabaseConnection } from './config/database.js';
 import logger from './config/logger.js';
 import telegramService from './services/telegram.js';
+
+if (process.env.NODE_ENV !== 'production') {
+  dotenv.config();
+}
 
 process.on('uncaughtException', (err) => {
   logger.error('Uncaught exception:', err);
@@ -23,9 +27,16 @@ process.on('unhandledRejection', (reason) => {
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const app = express();
-const PORT = process.env.PORT || 3001;
+const PORT = parseInt(process.env.EXPOSE_PORT || process.env.PORT, 10) || 3000;
+const HOST = '0.0.0.0';
 
-app.use(cors());
+const CORS_ORIGIN = process.env.CORS_ORIGIN || '*';
+
+app.use(cors({
+  origin: CORS_ORIGIN,
+  credentials: true,
+}));
+app.options('*', cors());
 app.use(express.json());
 app.use(morgan('dev'));
 
@@ -41,7 +52,7 @@ app.get('/api/health', (_req, res) => {
 app.use(errorHandler);
 
 async function loadSessions() {
-  const sessions = db.prepare('SELECT * FROM sessions').all();
+  const sessions = await query('SELECT * FROM sessions');
   for (const session of sessions) {
     try {
       await telegramService.loadSession(session.user_phone, session.session_string, session.api_id, session.api_hash);
@@ -53,11 +64,21 @@ async function loadSessions() {
   logger.info(`Loaded ${sessions.length} session(s)`);
 }
 
-app.listen(PORT, async () => {
-  logger.info(`Server running on http://localhost:${PORT}`);
-  try {
-    await loadSessions();
-  } catch (err) {
-    logger.error('Failed to load sessions:', err.message);
+async function start() {
+  logger.info('Starting server...');
+
+  const connected = await testDatabaseConnection();
+  if (!connected) {
+    logger.error('Fatal: Cannot connect to database. Exiting.');
+    process.exit(1);
   }
-});
+
+  await initializeDatabase();
+  await loadSessions();
+
+  app.listen(PORT, HOST, () => {
+    logger.info(`Server running on http://${HOST}:${PORT}`);
+  });
+}
+
+start();

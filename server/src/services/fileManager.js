@@ -1,4 +1,4 @@
-import db from '../config/database.js';
+import { query, get, run } from '../config/database.js';
 import logger from '../config/logger.js';
 import telegramService from './telegram.js';
 import fs from 'fs';
@@ -6,62 +6,71 @@ import fs from 'fs';
 class FileManager {
   async getItems(parentId, ownerPhone) {
     if (parentId === 'root' || !parentId) {
-      return db.prepare(
-        'SELECT * FROM items WHERE owner_phone = ? AND parent_id IS NULL ORDER BY is_folder DESC, name ASC'
-      ).all(ownerPhone);
+      return await query(
+        'SELECT * FROM items WHERE owner_phone = ? AND parent_id IS NULL ORDER BY is_folder DESC, name ASC',
+        [ownerPhone]
+      );
     }
-    return db.prepare(
-      'SELECT * FROM items WHERE owner_phone = ? AND parent_id = ? ORDER BY is_folder DESC, name ASC'
-    ).all(ownerPhone, parentId);
+    return await query(
+      'SELECT * FROM items WHERE owner_phone = ? AND parent_id = ? ORDER BY is_folder DESC, name ASC',
+      [ownerPhone, parentId]
+    );
   }
 
   async getItem(itemId) {
-    return db.prepare('SELECT * FROM items WHERE id = ?').get(itemId);
+    return await get('SELECT * FROM items WHERE id = ?', [itemId]);
   }
 
   async getItemByMessageId(messageId, ownerPhone) {
-    return db.prepare(
-      'SELECT * FROM items WHERE telegram_message_id = ? AND owner_phone = ?'
-    ).get(messageId, ownerPhone);
+    return await get(
+      'SELECT * FROM items WHERE telegram_message_id = ? AND owner_phone = ?',
+      [messageId, ownerPhone]
+    );
   }
 
   async createFolder(name, parentId, ownerPhone) {
-    const result = db.prepare(
-      'INSERT INTO items (name, is_folder, parent_id, owner_phone) VALUES (?, 1, ?, ?)'
-    ).run(name, parentId || null, ownerPhone);
-    return db.prepare('SELECT * FROM items WHERE id = ?').get(result.lastInsertRowid);
+    const result = await run(
+      'INSERT INTO items (name, is_folder, parent_id, owner_phone) VALUES (?, 1, ?, ?)',
+      [name, parentId || null, ownerPhone]
+    );
+    return await get('SELECT * FROM items WHERE id = ?', [result.insertId]);
   }
 
   async createFile(ownerPhone, name, size, mimeType, parentId, telegramData) {
-    const result = db.prepare(
+    const result = await run(
       `INSERT INTO items (telegram_message_id, telegram_document_id, name, size, mime_type, 
         parent_id, owner_phone, access_hash, file_reference, dc_id)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
-    ).run(
-      telegramData.telegramMessageId,
-      telegramData.documentId,
-      name,
-      size,
-      mimeType,
-      parentId || null,
-      ownerPhone,
-      telegramData.accessHash,
-      telegramData.fileReference,
-      telegramData.dcId
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      [
+        telegramData.telegramMessageId,
+        telegramData.documentId,
+        name,
+        size,
+        mimeType,
+        parentId || null,
+        ownerPhone,
+        telegramData.accessHash,
+        telegramData.fileReference,
+        telegramData.dcId,
+      ]
     );
-    return db.prepare('SELECT * FROM items WHERE id = ?').get(result.lastInsertRowid);
+    return await get('SELECT * FROM items WHERE id = ?', [result.insertId]);
   }
 
   async renameItem(itemId, newName) {
-    db.prepare("UPDATE items SET name = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?")
-      .run(newName, itemId);
-    return db.prepare('SELECT * FROM items WHERE id = ?').get(itemId);
+    await run(
+      'UPDATE items SET name = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?',
+      [newName, itemId]
+    );
+    return await get('SELECT * FROM items WHERE id = ?', [itemId]);
   }
 
   async moveItem(itemId, newParentId) {
-    db.prepare("UPDATE items SET parent_id = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?")
-      .run(newParentId || null, itemId);
-    return db.prepare('SELECT * FROM items WHERE id = ?').get(itemId);
+    await run(
+      'UPDATE items SET parent_id = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?',
+      [newParentId || null, itemId]
+    );
+    return await get('SELECT * FROM items WHERE id = ?', [itemId]);
   }
 
   async deleteItem(itemId) {
@@ -69,7 +78,7 @@ class FileManager {
     if (!item) throw new Error('Item not found');
 
     if (item.is_folder) {
-      const children = db.prepare('SELECT * FROM items WHERE parent_id = ?').all(itemId);
+      const children = await query('SELECT * FROM items WHERE parent_id = ?', [itemId]);
       for (const child of children) {
         await this.deleteItem(child.id);
       }
@@ -83,7 +92,7 @@ class FileManager {
       }
     }
 
-    db.prepare('DELETE FROM items WHERE id = ?').run(itemId);
+    await run('DELETE FROM items WHERE id = ?', [itemId]);
     return { deleted: true };
   }
 
@@ -121,16 +130,18 @@ class FileManager {
   }
 
   async getStorageStats(ownerPhone) {
-    const stats = db.prepare(
-      'SELECT COUNT(*) as count, COALESCE(SUM(size), 0) as total_size FROM items WHERE owner_phone = ? AND is_folder = 0'
-    ).get(ownerPhone);
-    const folders = db.prepare(
-      'SELECT COUNT(*) as count FROM items WHERE owner_phone = ? AND is_folder = 1'
-    ).get(ownerPhone);
+    const stats = await get(
+      'SELECT COUNT(*) as count, COALESCE(SUM(size), 0) as total_size FROM items WHERE owner_phone = ? AND is_folder = 0',
+      [ownerPhone]
+    );
+    const folders = await get(
+      'SELECT COUNT(*) as count FROM items WHERE owner_phone = ? AND is_folder = 1',
+      [ownerPhone]
+    );
     return {
-      files: stats.count,
-      folders: folders.count,
-      usedSpace: stats.total_size,
+      files: Number(stats.count),
+      folders: Number(folders.count),
+      usedSpace: Number(stats.total_size),
     };
   }
 }

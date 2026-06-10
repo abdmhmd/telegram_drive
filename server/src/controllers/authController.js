@@ -1,5 +1,5 @@
 import telegramService from '../services/telegram.js';
-import db from '../config/database.js';
+import { get, query, run } from '../config/database.js';
 import { generateToken } from '../middleware/auth.js';
 import logger from '../config/logger.js';
 
@@ -37,13 +37,17 @@ export async function verifyCode(req, res, next) {
     }
 
     const { sessionString, apiId, apiHash } = result;
-    const existingSession = db.prepare('SELECT id FROM sessions WHERE user_phone = ?').get(phone);
+    const existingSession = await get('SELECT id FROM sessions WHERE user_phone = ?', [phone]);
     if (existingSession) {
-      db.prepare('UPDATE sessions SET session_string = ?, api_id = ?, api_hash = ? WHERE user_phone = ?')
-        .run(sessionString, apiId, apiHash, phone);
+      await run(
+        'UPDATE sessions SET session_string = ?, api_id = ?, api_hash = ? WHERE user_phone = ?',
+        [sessionString, apiId, apiHash, phone]
+      );
     } else {
-      db.prepare('INSERT INTO sessions (user_phone, session_string, api_id, api_hash) VALUES (?, ?, ?, ?)')
-        .run(phone, sessionString, apiId, apiHash);
+      await run(
+        'INSERT INTO sessions (user_phone, session_string, api_id, api_hash) VALUES (?, ?, ?, ?)',
+        [phone, sessionString, apiId, apiHash]
+      );
     }
 
     const token = generateToken(phone);
@@ -70,13 +74,17 @@ export async function verify2FA(req, res, next) {
     const result = await telegramService.verify2FA(phone, password);
     const { sessionString, apiId, apiHash } = result;
 
-    const existingSession = db.prepare('SELECT id FROM sessions WHERE user_phone = ?').get(phone);
+    const existingSession = await get('SELECT id FROM sessions WHERE user_phone = ?', [phone]);
     if (existingSession) {
-      db.prepare('UPDATE sessions SET session_string = ?, api_id = ?, api_hash = ? WHERE user_phone = ?')
-        .run(sessionString, apiId, apiHash, phone);
+      await run(
+        'UPDATE sessions SET session_string = ?, api_id = ?, api_hash = ? WHERE user_phone = ?',
+        [sessionString, apiId, apiHash, phone]
+      );
     } else {
-      db.prepare('INSERT INTO sessions (user_phone, session_string, api_id, api_hash) VALUES (?, ?, ?, ?)')
-        .run(phone, sessionString, apiId, apiHash);
+      await run(
+        'INSERT INTO sessions (user_phone, session_string, api_id, api_hash) VALUES (?, ?, ?, ?)',
+        [phone, sessionString, apiId, apiHash]
+      );
     }
 
     const token = generateToken(phone);
@@ -92,7 +100,9 @@ export async function verify2FA(req, res, next) {
 
 export async function getAccounts(req, res, next) {
   try {
-    const accounts = db.prepare('SELECT user_phone, created_at FROM sessions ORDER BY created_at DESC').all();
+    const accounts = await query(
+      'SELECT user_phone, created_at FROM sessions ORDER BY created_at DESC'
+    );
     res.json({ accounts });
   } catch (err) {
     next(err);
@@ -102,7 +112,10 @@ export async function getAccounts(req, res, next) {
 export async function login(req, res, next) {
   try {
     const { phone } = req.body;
-    const session = db.prepare('SELECT * FROM sessions WHERE user_phone = ?').get(phone);
+    if (!phone) {
+      return res.status(400).json({ error: 'phone is required' });
+    }
+    const session = await get('SELECT * FROM sessions WHERE user_phone = ?', [phone]);
     if (!session) {
       return res.status(404).json({ error: 'Account not found. Please set up first.' });
     }
@@ -118,7 +131,7 @@ export async function login(req, res, next) {
 
 export async function logout(req, res, next) {
   try {
-    db.prepare('DELETE FROM sessions WHERE user_phone = ?').run(req.user.phone);
+    await run('DELETE FROM sessions WHERE user_phone = ?', [req.user.phone]);
     res.json({ success: true, message: 'Logged out' });
   } catch (err) {
     next(err);

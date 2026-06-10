@@ -1,0 +1,175 @@
+[
+  {
+    "host": "local",
+    "method": "GET",
+    "path": "/api/health",
+    "expectedStatus": 200,
+    "actualStatus": 200,
+    "timeMs": 116,
+    "ok": true,
+    "responseSnippet": "{\"status\":\"ok\",\"timestamp\":\"2026-06-07T11:33:28.715Z\"}"
+  },
+  {
+    "host": "local",
+    "method": "POST",
+    "path": "/api/auth/send-code (missing fields)",
+    "expectedStatus": 400,
+    "actualStatus": 400,
+    "timeMs": 17,
+    "ok": true,
+    "responseSnippet": "{\"error\":\"api_id, api_hash, and phone are required\"}"
+  },
+  {
+    "host": "local",
+    "method": "POST",
+    "path": "/api/auth/send-code (credentials test)",
+    "expectedStatus": [
+      400,
+      200
+    ],
+    "actualStatus": 400,
+    "timeMs": 2508,
+    "ok": true,
+    "responseSnippet": "{\"error\":\"Invalid API ID or API Hash\"}"
+  },
+  {
+    "host": "local",
+    "method": "POST",
+    "path": "/api/auth/verify-code (missing fields)",
+    "expectedStatus": 400,
+    "actualStatus": 400,
+    "timeMs": 7,
+    "ok": true,
+    "responseSnippet": "{\"error\":\"phone and code are required\"}"
+  },
+  {
+    "host": "local",
+    "method": "POST",
+    "path": "/api/auth/verify-2fa (missing fields)",
+    "expectedStatus": 400,
+    "actualStatus": 400,
+    "timeMs": 8,
+    "ok": true,
+    "responseSnippet": "{\"error\":\"phone and password are required\"}"
+  },
+  {
+    "host": "local",
+    "method": "POST",
+    "path": "/api/auth/login (missing fields)",
+    "expectedStatus": 400,
+    "actualStatus": 404,
+    "timeMs": 8,
+    "ok": false,
+    "responseSnippet": "{\"error\":\"Account not found. Please set up first.\"}"
+  },
+  {
+    "host": "local",
+    "method": "GET",
+    "path": "/api/auth/accounts",
+    "expectedStatus": 200,
+    "actualStatus": 200,
+    "timeMs": 5,
+    "ok": true,
+    "responseSnippet": "{\"accounts\":[{\"user_phone\":\"+963996907425\",\"created_at\":\"2026-06-03 08:51:36\"}]}"
+  },
+  {
+    "host": "local",
+    "method": "GET",
+    "path": "/api/files (no auth)",
+    "expectedStatus": 401,
+    "actualStatus": 401,
+    "timeMs": 4,
+    "ok": true,
+    "responseSnippet": "{\"error\":\"No token provided\"}"
+  },
+  {
+    "host": "deployed",
+    "method": "GET",
+    "path": "/api/health",
+    "expectedStatus": 200,
+    "actualStatus": 503,
+    "timeMs": 583,
+    "ok": false,
+    "responseSnippet": "<!doctype html>\n<html lang=\"en\">\n<head>\n  <meta charset=\"utf-8\">\n  <meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">\n  <title>503 Service Unavailable</title>\n  <style>\n    * { box-s"
+  },
+  {
+    "host": "deployed",
+    "method": "POST",
+    "path": "/api/auth/send-code (missing fields)",
+    "expectedStatus": 400,
+    "actualStatus": 503,
+    "timeMs": 637,
+    "ok": false,
+    "responseSnippet": "<!doctype html>\n<html lang=\"en\">\n<head>\n  <meta charset=\"utf-8\">\n  <meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">\n  <title>503 Service Unavailable</title>\n  <style>\n    * { box-s"
+  },
+  {
+    "host": "deployed",
+    "method": "POST",
+    "path": "/api/auth/send-code (credentials test)",
+    "expectedStatus": [
+      400,
+      200
+    ],
+    "actualStatus": 503,
+    "timeMs": 104,
+    "ok": false,
+    "responseSnippet": "<!doctype html>\n<html lang=\"en\">\n<head>\n  <meta charset=\"utf-8\">\n  <meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">\n  <title>503 Service Unavailable</title>\n  <style>\n    * { box-s"
+  },
+  {
+    "host": "deployed",
+    "method": "POST",
+    "path": "/api/auth/verify-code (missing fields)",
+    "expectedStatus": 400,
+    "actualStatus": 503,
+    "timeMs": 123,
+    "ok": false,
+    "responseSnippet": "<!doctype html>\n<html lang=\"en\">\n<head>\n  <meta charset=\"utf-8\">\n  <meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">\n  <title>503 Service Unavailable</title>\n  <style>\n    * { box-s"
+  },
+  {
+    "host": "deployed",
+    "method": "POST",
+    "path": "/api/auth/verify-2fa (missing fields)",
+    "expectedStatus": 400,
+    "actualStatus": 503,
+    "timeMs": 153,
+    "ok": false,
+    "responseSnippet": "<!doctype html>\n<html lang=\"en\">\n<head>\n  <meta charset=\"utf-8\">\n  <meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">\n  <title>503 Service Unavailable</title>\n  <style>\n    * { box-s"
+  },
+  {
+    "host": "deployed",
+    "method": "POST",
+    "path": "/api/auth/login (missing fields)",
+    "expectedStatus": 400,
+    "actualStatus": 503,
+    "timeMs": 202,
+    "ok": false,
+    "responseSnippet": "<!doctype html>\n<html lang=\"en\">\n<head>\n  <meta charset=\"utf-8\">\n  <meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">\n  <title>503 Service Unavailable</title>\n  <style>\n    * { box-s"
+  },
+  {
+    "host": "deployed",
+    "method": "GET",
+    "path": "/api/auth/accounts",
+    "expectedStatus": 200,
+    "actualStatus": 503,
+    "timeMs": 206,
+    "ok": false,
+    "responseSnippet": "<!doctype html>\n<html lang=\"en\">\n<head>\n  <meta charset=\"utf-8\">\n  <meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">\n  <title>503 Service Unavailable</title>\n  <style>\n    * { box-s"
+  },
+  {
+    "host": "deployed",
+    "method": "GET",
+    "path": "/api/files (no auth)",
+    "expectedStatus": 401,
+    "actualStatus": 503,
+    "timeMs": 210,
+    "ok": false,
+    "responseSnippet": "<!doctype html>\n<html lang=\"en\">\n<head>\n  <meta charset=\"utf-8\">\n  <meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">\n  <title>503 Service Unavailable</title>\n  <style>\n    * { box-s"
+  },
+  {
+    "_summary": {
+      "total": 16,
+      "passed": 7,
+      "failed": 9
+    }
+  }
+]

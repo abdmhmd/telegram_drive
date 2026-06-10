@@ -34,7 +34,18 @@ Edit `server/.env` (created automatically with defaults). You can change:
 PORT=3001
 JWT_SECRET=your-secret-key-here
 UPLOAD_DIR=./uploads
-DATABASE_PATH=./data/database.sqlite
+
+# MySQL Database (required)
+DB_HOST=localhost
+DB_PORT=3306
+DB_USER=root
+DB_PASSWORD=
+DB_NAME=telegram_drive
+```
+
+**Prerequisite:** Create the MySQL database before starting:
+```bash
+mysql -u root -e "CREATE DATABASE IF NOT EXISTS telegram_drive CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci"
 ```
 
 ### 3. Run the app
@@ -55,6 +66,30 @@ Open http://localhost:5173 in your browser.
 4. Enter your phone number with country code
 5. Enter the verification code sent to your Telegram
 6. If you have 2FA enabled, enter your 2FA password
+
+### ⚙️ Migrating from SQLite to MySQL (one-time)
+
+If you previously used SQLite and are switching to MySQL, run the migration
+script after completing the setup above:
+
+```bash
+cd server
+npm install --save-dev better-sqlite3     # temporary dependency
+node scripts/migrate-to-mysql.js          # migrate all data
+npm uninstall better-sqlite3              # cleanup
+```
+
+The script preserves all IDs, foreign keys, and relationships. It is safe to
+re-run (uses `ON DUPLICATE KEY`). It also migrates an optional
+`file_embeddings` table if present.
+
+After successful migration, you may delete the old SQLite files:
+
+```bash
+Remove-Item server/data/database.sqlite, server/data/database.sqlite-shm, server/data/database.sqlite-wal
+```
+
+---
 
 ## API Endpoints
 
