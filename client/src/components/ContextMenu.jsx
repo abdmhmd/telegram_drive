@@ -1,4 +1,5 @@
 import { useCallback } from 'react';
+import { motion } from 'framer-motion';
 import useStore from '../store/useStore';
 import { filesApi } from '../api';
 import { Download, Trash2, Edit3, Move, Share2, Eye } from 'lucide-react';
@@ -67,25 +68,30 @@ export default function ContextMenu({ menu }) {
   ];
 
   return (
-    <div
-      className="fixed z-50 bg-white dark:bg-gray-900 rounded-xl shadow-xl border border-gray-200 dark:border-gray-700 py-1 min-w-[180px]"
+    <motion.div
+      className="fixed z-50 bg-white dark:bg-surface-card rounded-xl shadow-xl border border-gray-200 dark:border-surface-border py-1 min-w-[180px]"
       style={{ left: Math.min(menu.x, window.innerWidth - 200), top: menu.y }}
       onClick={(e) => e.stopPropagation()}
+      initial={{ opacity: 0, scale: 0.95 }}
+      animate={{ opacity: 1, scale: 1 }}
+      transition={{ duration: 0.12 }}
     >
       {menuItems.map((item, i) => (
-        <button
+        <motion.button
           key={i}
           onClick={item.action}
           className={`w-full flex items-center gap-2.5 px-3 py-2.5 text-sm transition-colors min-h-[44px] ${
             item.danger
               ? 'text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30'
-              : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800'
+              : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-surface-hover'
           }`}
+          whileHover={{ x: 4 }}
+          transition={{ type: 'spring', stiffness: 300 }}
         >
           <item.icon className="w-4 h-4" />
           {item.label}
-        </button>
+        </motion.button>
       ))}
-    </div>
+    </motion.div>
   );
 }

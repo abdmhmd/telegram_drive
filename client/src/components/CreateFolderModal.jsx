@@ -1,6 +1,28 @@
 import { useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import useStore from '../store/useStore';
 import { X, FolderPlus } from 'lucide-react';
+
+const backdropVariants = {
+  hidden: { opacity: 0 },
+  visible: { opacity: 1 },
+};
+
+const modalVariants = {
+  hidden: { opacity: 0, scale: 0.92, y: 20 },
+  visible: {
+    opacity: 1,
+    scale: 1,
+    y: 0,
+    transition: { type: 'spring', damping: 25, stiffness: 300 },
+  },
+  exit: {
+    opacity: 0,
+    scale: 0.92,
+    y: 20,
+    transition: { duration: 0.15 },
+  },
+};
 
 export default function CreateFolderModal() {
   const { setShowCreateFolder, createFolder, currentFolder } = useStore();
@@ -16,33 +38,52 @@ export default function CreateFolderModal() {
   };
 
   return (
-    <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4" onClick={() => setShowCreateFolder(false)}>
-      <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-2xl w-full max-w-sm mx-2 sm:mx-0" onClick={(e) => e.stopPropagation()}>
-        <div className="flex items-center justify-between p-4 sm:p-5 border-b border-gray-100 dark:border-gray-700">
-          <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">New Folder</h2>
-          <button onClick={() => setShowCreateFolder(false)} className="p-1.5 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg">
-            <X className="w-5 h-5 text-gray-500 dark:text-gray-400" />
-          </button>
-        </div>
-        <form onSubmit={handleSubmit} className="p-4 sm:p-5">
-          <input
-            type="text"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            placeholder="Folder name"
-            className="w-full px-3 py-2.5 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none text-sm sm:text-base"
-            autoFocus
-          />
-          <button
-            type="submit"
-            disabled={!name.trim() || loading}
-            className="w-full mt-4 flex items-center justify-center gap-2 px-4 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors min-h-[44px] text-sm sm:text-base"
-          >
-            <FolderPlus className="w-4 h-4" />
-            Create Folder
-          </button>
-        </form>
-      </div>
-    </div>
+    <AnimatePresence>
+      <motion.div
+        className="fixed inset-0 z-50 flex items-center justify-center p-4"
+        variants={backdropVariants}
+        initial="hidden"
+        animate="visible"
+        exit="hidden"
+        style={{ backgroundColor: 'rgba(0,0,0,0.5)' }}
+        onClick={() => setShowCreateFolder(false)}
+      >
+        <motion.div
+          className="bg-white dark:bg-surface-card rounded-2xl shadow-2xl w-full max-w-sm mx-2 sm:mx-0"
+          variants={modalVariants}
+          initial="hidden"
+          animate="visible"
+          exit="exit"
+          onClick={(e) => e.stopPropagation()}
+        >
+          <div className="flex items-center justify-between p-4 sm:p-5 border-b border-gray-100 dark:border-surface-border">
+            <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">New Folder</h2>
+            <button onClick={() => setShowCreateFolder(false)} className="icon-btn">
+              <X className="w-5 h-5 text-gray-500 dark:text-gray-400" />
+            </button>
+          </div>
+
+          <form onSubmit={handleSubmit} className="p-4 sm:p-5">
+            <input
+              type="text"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              placeholder="Folder name"
+              autoFocus
+            />
+            <motion.button
+              type="submit"
+              disabled={!name.trim() || loading}
+              className="btn-primary w-full mt-4"
+              whileHover={name.trim() ? { scale: 1.01 } : {}}
+              whileTap={name.trim() ? { scale: 0.98 } : {}}
+            >
+              <FolderPlus className="w-4 h-4" />
+              {loading ? 'Creating...' : 'Create Folder'}
+            </motion.button>
+          </form>
+        </motion.div>
+      </motion.div>
+    </AnimatePresence>
   );
 }

@@ -1,7 +1,14 @@
+import { motion } from 'framer-motion';
+
 export default function Layout({ children }) {
   return (
-    <div className="h-screen flex bg-gray-50 dark:bg-gray-950 overflow-x-hidden">
+    <motion.div
+      className="h-screen flex bg-gray-50 dark:bg-surface overflow-x-hidden"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.2 }}
+    >
       {children}
-    </div>
+    </motion.div>
   );
 }

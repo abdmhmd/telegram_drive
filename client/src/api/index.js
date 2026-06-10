@@ -1,7 +1,9 @@
 import axios from 'axios';
 
+const BASE_URL = import.meta.env.VITE_API_BASE_URL || '/api';
+
 const api = axios.create({
-  baseURL: '/api',
+  baseURL: BASE_URL,
   headers: {
     'Content-Type': 'application/json',
   },
@@ -43,8 +45,8 @@ export const filesApi = {
       headers: { 'Content-Type': 'multipart/form-data' },
       onUploadProgress: onProgress,
     }),
-  download: (fileId) => `/api/files/download/${fileId}`,
-  preview: (fileId) => `/api/files/preview/${fileId}`,
+  download: (fileId) => `${BASE_URL}/files/download/${fileId}`,
+  preview: (fileId) => `${BASE_URL}/files/preview/${fileId}`,
   delete: (fileId) => api.delete(`/files/${fileId}`),
   update: (fileId, data) => api.put(`/files/${fileId}`, data),
   share: (fileId, expiresInHours) =>

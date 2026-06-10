@@ -1,3 +1,4 @@
+import { motion } from 'framer-motion';
 import useStore from '../store/useStore';
 import { ChevronRight, Home } from 'lucide-react';
 
@@ -7,7 +8,13 @@ export default function Breadcrumbs() {
   return (
     <nav className="flex items-center gap-1 text-sm min-w-0 flex-wrap">
       {breadcrumbs.map((crumb, i) => (
-        <div key={crumb.id} className="flex items-center gap-1 min-w-0">
+        <motion.div
+          key={crumb.id}
+          className="flex items-center gap-1 min-w-0"
+          initial={{ opacity: 0, x: -8 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ duration: 0.15, delay: i * 0.03 }}
+        >
           {i > 0 && <ChevronRight className="w-3.5 h-3.5 text-gray-400 dark:text-gray-500 flex-shrink-0" />}
           <button
             onClick={() => navigateToFolder(crumb.id)}
@@ -20,7 +27,7 @@ export default function Breadcrumbs() {
             {i === 0 && <Home className="w-3.5 h-3.5 flex-shrink-0" />}
             <span className="truncate max-w-[120px] sm:max-w-none">{crumb.name}</span>
           </button>
-        </div>
+        </motion.div>
       ))}
     </nav>
   );
