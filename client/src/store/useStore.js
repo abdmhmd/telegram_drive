@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { filesApi, foldersApi } from '../api';
+import toast from 'react-hot-toast';
 
 function getInitialTheme() {
   const saved = localStorage.getItem('theme');
@@ -68,7 +69,12 @@ const useStore = create((set, get) => ({
         isLoading: false,
       });
     } catch (err) {
-      set({ error: err.response?.data?.error || 'Failed to load files', isLoading: false });
+      const status = err.response?.status;
+      const msg = err.response?.data?.error || 'Failed to load files';
+      console.error(`[loadItems] Failed (parentId=${parentId}, status=${status}):`, {
+        parentId, status, data: err.response?.data, message: err.message, error: err,
+      });
+      set({ error: msg, isLoading: false });
     }
   },
 
@@ -80,9 +86,16 @@ const useStore = create((set, get) => ({
 
       try {
         await filesApi.upload(formData, onProgress);
+        toast.success(`${file.name} uploaded`);
         await get().loadItems(parentId);
       } catch (err) {
-        set({ error: `Failed to upload ${file.name}: ${err.response?.data?.error || err.message}` });
+        const status = err.response?.status;
+        const msg = `Failed to upload ${file.name}: ${err.response?.data?.error || err.message}`;
+        toast.error(`Upload failed: ${err.response?.data?.error || err.message}`);
+        console.error(`[uploadFiles] Failed (file=${file.name}, status=${status}):`, {
+          fileName: file.name, status, data: err.response?.data, message: err.message, error: err,
+        });
+        set({ error: msg });
       }
     }
   },
@@ -90,46 +103,93 @@ const useStore = create((set, get) => ({
   deleteItem: async (itemId) => {
     try {
       await filesApi.delete(itemId);
+      toast.success('File deleted');
       await get().loadItems(get().currentFolder);
     } catch (err) {
-      set({ error: err.response?.data?.error || 'Failed to delete' });
+      const status = err.response?.status;
+      let msg = err.response?.data?.error || 'Failed to delete';
+      if (status === 403) msg = 'You do not have permission to delete this file';
+      else if (status === 404) msg = 'File not found';
+      else if (!err.response) msg = 'Delete failed: Network error. Please check your connection.';
+      toast.error(msg);
+      console.error(`[deleteItem] Failed (itemId=${itemId}, status=${status}):`, {
+        itemId, status, data: err.response?.data, message: err.message, error: err,
+      });
+      set({ error: msg });
     }
   },
 
   renameItem: async (itemId, name) => {
     try {
       await filesApi.update(itemId, { name });
+      toast.success('Renamed successfully');
       await get().loadItems(get().currentFolder);
     } catch (err) {
-      set({ error: err.response?.data?.error || 'Failed to rename' });
+      const status = err.response?.status;
+      let msg = err.response?.data?.error || 'Failed to rename';
+      if (status === 403) msg = 'You do not have permission to rename this file';
+      else if (status === 404) msg = 'File not found';
+      else if (!err.response) msg = 'Rename failed: Network error. Please check your connection.';
+      toast.error(msg);
+      console.error(`[renameItem] Failed (itemId=${itemId}, name=${name}, status=${status}):`, {
+        itemId, newName: name, status, data: err.response?.data, message: err.message, error: err,
+      });
+      set({ error: msg });
     }
   },
 
   moveItem: async (itemId, parentId) => {
     try {
       await filesApi.update(itemId, { parent_id: parentId });
+      toast.success('Moved successfully');
       await get().loadItems(get().currentFolder);
     } catch (err) {
-      set({ error: err.response?.data?.error || 'Failed to move' });
+      const status = err.response?.status;
+      let msg = err.response?.data?.error || 'Failed to move';
+      if (status === 403) msg = 'You do not have permission to move this file';
+      else if (status === 404) msg = 'File not found';
+      else if (!err.response) msg = 'Move failed: Network error. Please check your connection.';
+      toast.error(msg);
+      console.error(`[moveItem] Failed (itemId=${itemId}, parentId=${parentId}, status=${status}):`, {
+        itemId, parentId, status, data: err.response?.data, message: err.message, error: err,
+      });
+      set({ error: msg });
     }
   },
 
   createFolder: async (name, parentId) => {
     try {
       await foldersApi.create({ name, parent_id: parentId });
+      toast.success('Folder created');
       await get().loadItems(parentId);
       set({ showCreateFolder: false });
     } catch (err) {
-      set({ error: err.response?.data?.error || 'Failed to create folder' });
+      const status = err.response?.status;
+      const msg = err.response?.data?.error || 'Failed to create folder';
+      toast.error(msg);
+      console.error(`[createFolder] Failed (name=${name}, parentId=${parentId}, status=${status}):`, {
+        name, parentId, status, data: err.response?.data, message: err.message, error: err,
+      });
+      set({ error: msg });
     }
   },
 
   createShareLink: async (fileId, expiresInHours) => {
     try {
       const res = await filesApi.share(fileId, expiresInHours);
+      toast.success('Share link created');
       return res.data;
     } catch (err) {
-      set({ error: err.response?.data?.error || 'Failed to create share link' });
+      const status = err.response?.status;
+      let msg = err.response?.data?.error || 'Failed to create share link';
+      if (status === 403) msg = 'You do not have permission to share this file';
+      else if (status === 404) msg = 'File not found';
+      else if (!err.response) msg = 'Share failed: Network error. Please check your connection.';
+      toast.error(msg);
+      console.error(`[createShareLink] Failed (fileId=${fileId}, status=${status}):`, {
+        fileId, expiresInHours, status, data: err.response?.data, message: err.message, error: err,
+      });
+      set({ error: msg });
       return null;
     }
   },

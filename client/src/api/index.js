@@ -17,10 +17,37 @@ api.interceptors.request.use((config) => {
   return config;
 });
 
+function getErrorStatusMessage(status) {
+  if (status === 403) return 'Forbidden — you do not have permission';
+  if (status === 404) return 'Not found';
+  if (status === 409) return 'Conflict';
+  if (status === 413) return 'File too large';
+  if (status === 429) return 'Too many requests';
+  return '';
+}
+
 api.interceptors.response.use(
   (response) => response,
   (error) => {
-    if (error.response?.status === 401) {
+    const reqUrl = error.config?.url || '(unknown)';
+    const reqMethod = error.config?.method?.toUpperCase() || '?';
+    const status = error.response?.status;
+    const respData = error.response?.data;
+
+    console.error(
+      `[API Error] ${reqMethod} ${reqUrl} → ${status || 'NO RESPONSE'}`,
+      {
+        url: reqUrl,
+        method: reqMethod,
+        status,
+        statusText: error.response?.statusText,
+        responseData: respData,
+        message: error.message,
+        fullError: error,
+      }
+    );
+
+    if (status === 401) {
       localStorage.removeItem('token');
       localStorage.removeItem('phone');
       window.location.href = '/login';
@@ -45,12 +72,33 @@ export const filesApi = {
       headers: { 'Content-Type': 'multipart/form-data' },
       onUploadProgress: onProgress,
     }),
-  download: (fileId) => `${BASE_URL}/files/download/${fileId}`,
-  preview: (fileId) => `${BASE_URL}/files/preview/${fileId}`,
+  download: (fileId) => {
+    const token = localStorage.getItem('token');
+    return `${BASE_URL}/files/download/${fileId}?token=${token}`;
+  },
+  preview: (fileId) => {
+    const token = localStorage.getItem('token');
+    return `${BASE_URL}/files/preview/${fileId}?token=${token}`;
+  },
   delete: (fileId) => api.delete(`/files/${fileId}`),
   update: (fileId, data) => api.put(`/files/${fileId}`, data),
   share: (fileId, expiresInHours) =>
     api.post(`/files/${fileId}/share`, { expires_in_hours: expiresInHours }),
+  async downloadWithError(fileId) {
+    const token = localStorage.getItem('token');
+    const res = await fetch(`${BASE_URL}/files/download/${fileId}`, {
+      headers: token ? { Authorization: `Bearer ${token}` } : {},
+    });
+    if (!res.ok) {
+      let errData;
+      try { errData = await res.json(); } catch { errData = { error: res.statusText }; }
+      const err = new Error(errData.error || `Download failed (${res.status})`);
+      err.status = res.status;
+      err.data = errData;
+      throw err;
+    }
+    return res;
+  },
 };
 
 export const foldersApi = {

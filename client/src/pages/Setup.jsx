@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import toast from 'react-hot-toast';
 import { authApi } from '../api';
 import useStore from '../store/useStore';
 import { maskPhone } from '../utils/helpers';
@@ -24,8 +25,10 @@ export default function Setup() {
         api_hash: form.api_hash,
         phone: form.phone,
       });
+      toast.success('Code sent to your phone');
       setStep(1);
     } catch (err) {
+      toast.error('Failed to send code');
       setError(err.response?.data?.error || 'Failed to send code');
     } finally {
       setLoading(false);
@@ -46,9 +49,11 @@ export default function Setup() {
         setStep(2);
         return;
       }
+      toast.success('Welcome back!');
       setAuth(res.data.token, res.data.phone);
       navigate('/dashboard');
     } catch (err) {
+      toast.error(err.response?.data?.error || 'Failed to verify code');
       setError(err.response?.data?.error || 'Failed to verify code');
     } finally {
       setLoading(false);
@@ -64,9 +69,11 @@ export default function Setup() {
         phone: form.phone,
         password: form.password,
       });
+      toast.success('Welcome back!');
       setAuth(res.data.token, res.data.phone);
       navigate('/dashboard');
     } catch (err) {
+      toast.error(err.response?.data?.error || 'Failed to verify 2FA password');
       setError(err.response?.data?.error || 'Failed to verify 2FA password');
     } finally {
       setLoading(false);

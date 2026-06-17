@@ -1,4 +1,5 @@
 import { motion } from 'framer-motion';
+import toast from 'react-hot-toast';
 import useStore from '../store/useStore';
 import { authApi } from '../api';
 import { maskPhone } from '../utils/helpers';
@@ -17,8 +18,11 @@ export default function Sidebar() {
   const navigate = useNavigate();
 
   const handleLogout = async () => {
-    try { await authApi.logout(); } catch {}
+    try { await authApi.logout(); } catch (err) {
+      console.error('[Sidebar] Logout API call failed:', err.message);
+    }
     clearAuth();
+    toast.success('Logged out');
     navigate('/login');
   };
 
