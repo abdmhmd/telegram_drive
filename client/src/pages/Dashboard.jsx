@@ -11,7 +11,7 @@ import CreateFolderModal from '../components/CreateFolderModal';
 import ContextMenu from '../components/ContextMenu';
 import PreviewModal from '../components/PreviewModal';
 import ShareModal from '../components/ShareModal';
-import { Upload, FolderPlus, Loader2, AlertCircle, Menu, CloudOff } from 'lucide-react';
+import { Upload, FolderPlus, Loader2, AlertCircle, CloudOff } from 'lucide-react';
 
 const containerVariants = {
   hidden: {},
@@ -27,7 +27,7 @@ export default function Dashboard() {
     items, currentFolder, viewMode, isLoading, error,
     showUpload, showCreateFolder, contextMenu, previewItem, showShare,
     loadItems, setShowUpload, setShowCreateFolder, setContextMenu,
-    clearError, navigateToFolder, setSidebarOpen,
+    clearError, navigateToFolder,
   } = useStore();
 
   useEffect(() => {
@@ -64,14 +64,6 @@ export default function Dashboard() {
         >
           <div className="flex items-center justify-between gap-2">
             <div className="flex items-center gap-2 min-w-0">
-              <motion.button
-                onClick={() => setSidebarOpen(true)}
-                className="lg:hidden p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors flex-shrink-0"
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-              >
-                <Menu className="w-5 h-5 text-gray-600 dark:text-gray-300" />
-              </motion.button>
               <Breadcrumbs />
             </div>
             <div className="flex items-center gap-2 flex-shrink-0">
@@ -99,7 +91,7 @@ export default function Dashboard() {
         </motion.div>
 
         {/* Main content */}
-        <div className="flex-1 overflow-auto p-4 md:p-6 scrollbar-thin" onClick={closeContextMenu}>
+        <div className="flex-1 overflow-auto p-4 md:p-6 pb-24 scrollbar-thin" onClick={closeContextMenu}>
           {/* Error banner */}
           <AnimatePresence>
             {error && (
