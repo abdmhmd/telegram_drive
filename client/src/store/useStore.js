@@ -32,6 +32,11 @@ const useStore = create((set, get) => ({
   showShare: false,
   sidebarOpen: false,
 
+  // Move picker
+  showMoveFolderPicker: false,
+  moveTargetItem: null,
+  movePickerOriginalFolder: null,
+
   // Theme
   theme: getInitialTheme(),
 
@@ -156,12 +161,29 @@ const useStore = create((set, get) => ({
 
   clearError: () => set({ error: null }),
 
+  // Move picker
+  setShowMoveFolderPicker: (show) => set({ showMoveFolderPicker: show }),
+  setMoveTargetItem: (item) => set({ moveTargetItem: item }),
+
   navigateToFolder: async (folderId) => {
-    if (folderId === 'root') {
+    const pickerOpen = get().showMoveFolderPicker;
+    if (folderId === 'root' || folderId === null || folderId === undefined) {
       await get().loadItems(null);
+      if (pickerOpen) set({ movePickerOriginalFolder: null });
     } else {
       await get().loadItems(folderId);
+      if (pickerOpen) set({ movePickerOriginalFolder: folderId });
     }
+  },
+
+  restoreMovePickerFolder: async () => {
+    const original = get().movePickerOriginalFolder;
+    if (original !== undefined && original !== null) {
+      await get().loadItems(original);
+    } else {
+      await get().loadItems(null);
+    }
+    set({ showMoveFolderPicker: false, moveTargetItem: null, movePickerOriginalFolder: null });
   },
 }));
 

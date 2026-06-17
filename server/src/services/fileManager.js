@@ -17,7 +17,10 @@ class FileManager {
     );
   }
 
-  async getItem(itemId) {
+  async getItem(itemId, ownerPhone = null) {
+    if (ownerPhone) {
+      return await get('SELECT * FROM items WHERE id = ? AND owner_phone = ?', [itemId, ownerPhone]);
+    }
     return await get('SELECT * FROM items WHERE id = ?', [itemId]);
   }
 
@@ -96,13 +99,13 @@ class FileManager {
     return { deleted: true };
   }
 
-  async getBreadcrumbs(itemId) {
+  async getBreadcrumbs(itemId, ownerPhone = null) {
     const crumbs = [];
-    let current = await this.getItem(itemId);
+    let current = await this.getItem(itemId, ownerPhone);
     while (current) {
       crumbs.unshift({ id: current.id, name: current.name });
       if (current.parent_id) {
-        current = await this.getItem(current.parent_id);
+        current = await this.getItem(current.parent_id, ownerPhone);
       } else {
         current = null;
       }

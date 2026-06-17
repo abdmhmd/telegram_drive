@@ -12,6 +12,14 @@ export function formatSize(bytes) {
   return `${(bytes / Math.pow(1024, i)).toFixed(2)} ${units[i]}`;
 }
 
+export function maskPhone(phone) {
+  if (!phone) return '';
+  const cleaned = String(phone).replace(/[^\d+]/g, '');
+  const last4 = cleaned.slice(-4);
+  const prefix = cleaned.startsWith('+') ? '+' : '';
+  return `${prefix}**${last4}`;
+}
+
 export function formatDate(date) {
   return new Date(date).toLocaleDateString('en-US', {
     year: 'numeric',

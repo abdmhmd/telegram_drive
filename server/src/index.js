@@ -30,7 +30,8 @@ const app = express();
 const PORT = parseInt(process.env.EXPOSE_PORT || process.env.PORT, 10) || 3000;
 const HOST = '0.0.0.0';
 
-const CORS_ORIGIN = process.env.CORS_ORIGIN || '*';
+const isProduction = process.env.NODE_ENV === 'production';
+const CORS_ORIGIN = process.env.CORS_ORIGIN || (isProduction ? 'https://telegram-drive.netlify.app' : '*');
 
 app.use(cors({
   origin: CORS_ORIGIN,

@@ -1,3 +1,4 @@
+import fs from 'fs';
 import mysql from 'mysql2/promise';
 import logger from './logger.js';
 
@@ -11,7 +12,17 @@ const {
 } = process.env;
 
 const sslEnabled = DB_SSL === 'true';
-const ssl = sslEnabled ? {} : undefined;
+let ssl = undefined;
+if (sslEnabled) {
+  ssl = { rejectUnauthorized: true };
+  if (process.env.DB_CA_PATH) {
+    try {
+      ssl.ca = fs.readFileSync(process.env.DB_CA_PATH);
+    } catch (err) {
+      logger.warn(`Failed to read CA file at ${process.env.DB_CA_PATH}: ${err.message}`);
+    }
+  }
+}
 
 logger.info('Configuring database connection pool');
 logger.info(`  Host: ${DB_HOST}`);

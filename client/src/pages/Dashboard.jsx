@@ -4,8 +4,7 @@ import useStore from '../store/useStore';
 import Layout from '../components/Layout';
 import Sidebar from '../components/Sidebar';
 import Breadcrumbs from '../components/Breadcrumbs';
-import FileGrid from '../components/FileGrid';
-import FileList from '../components/FileList';
+import FileItem from '../components/FileItem';
 import ViewToggle from '../components/ViewToggle';
 import UploadModal from '../components/UploadModal';
 import CreateFolderModal from '../components/CreateFolderModal';
@@ -13,6 +12,15 @@ import ContextMenu from '../components/ContextMenu';
 import PreviewModal from '../components/PreviewModal';
 import ShareModal from '../components/ShareModal';
 import { Upload, FolderPlus, Loader2, AlertCircle, Menu, CloudOff } from 'lucide-react';
+
+const containerVariants = {
+  hidden: {},
+  visible: {
+    transition: {
+      staggerChildren: 0.04,
+    },
+  },
+};
 
 export default function Dashboard() {
   const {
@@ -22,12 +30,18 @@ export default function Dashboard() {
     clearError, navigateToFolder, setSidebarOpen,
   } = useStore();
 
-  useEffect(() => { loadItems(currentFolder); }, []);
+  useEffect(() => {
+    if (currentFolder) {
+      loadItems(currentFolder);
+    } else {
+      loadItems(null);
+    }
+  }, []);
 
   const handleContextMenu = useCallback((e, item) => {
     e.preventDefault();
     setContextMenu({ x: e.clientX, y: e.clientY, item });
-  }, []);
+  }, [setContextMenu]);
 
   const closeContextMenu = useCallback(() => { setContextMenu(null); }, []);
 
@@ -130,9 +144,30 @@ export default function Dashboard() {
               </motion.button>
             </motion.div>
           ) : viewMode === 'grid' ? (
-            <FileGrid items={items} onContextMenu={handleContextMenu} />
+            <motion.div
+              className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3 sm:gap-4"
+              variants={containerVariants}
+              initial="hidden"
+              animate="visible"
+            >
+              {items.map((item) => (
+                <FileItem key={item.id} item={item} viewMode="grid" onContextMenu={handleContextMenu} />
+              ))}
+            </motion.div>
           ) : (
-            <FileList items={items} onContextMenu={handleContextMenu} />
+            <div className="card overflow-hidden">
+              <div className="flex items-center gap-3 px-3 sm:px-4 py-2 bg-gray-50 dark:bg-gray-800/50 border-b border-gray-200 dark:border-surface-border text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                <div className="w-[38px] flex-shrink-0" />
+                <div className="flex-1 min-w-0">Name</div>
+                <div className="w-20 text-right flex-shrink-0 sm:w-24">Size</div>
+                <div className="w-24 text-right hidden md:block flex-shrink-0">Date</div>
+              </div>
+              <motion.div variants={containerVariants} initial="hidden" animate="visible">
+                {items.map((item) => (
+                  <FileItem key={item.id} item={item} viewMode="list" onContextMenu={handleContextMenu} />
+                ))}
+              </motion.div>
+            </div>
           )}
         </div>
       </div>

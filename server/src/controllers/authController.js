@@ -2,6 +2,7 @@ import telegramService from '../services/telegram.js';
 import { get, query, run } from '../config/database.js';
 import { generateToken } from '../middleware/auth.js';
 import logger from '../config/logger.js';
+import { maskPhone } from '../utils/helpers.js';
 
 export async function sendCode(req, res, next) {
   try {
@@ -33,7 +34,7 @@ export async function verifyCode(req, res, next) {
 
     const result = await telegramService.verifyCode(phone, code);
     if (result.needPassword) {
-      return res.json({ needPassword: true, phone });
+      return res.json({ needPassword: true, phone: maskPhone(phone) });
     }
 
     const { sessionString, apiId, apiHash } = result;
@@ -51,7 +52,7 @@ export async function verifyCode(req, res, next) {
     }
 
     const token = generateToken(phone);
-    res.json({ success: true, token, phone });
+    res.json({ success: true, token, phone: maskPhone(phone) });
   } catch (err) {
     logger.error('verifyCode error:', err);
     if (err.errorMessage === 'PHONE_CODE_INVALID') {
@@ -88,7 +89,7 @@ export async function verify2FA(req, res, next) {
     }
 
     const token = generateToken(phone);
-    res.json({ success: true, token, phone });
+    res.json({ success: true, token, phone: maskPhone(phone) });
   } catch (err) {
     logger.error('verify2FA error:', err);
     if (err.errorMessage === 'PASSWORD_HASH_INVALID') {
@@ -122,7 +123,7 @@ export async function login(req, res, next) {
 
     await telegramService.loadSession(phone, session.session_string, session.api_id, session.api_hash);
     const token = generateToken(phone);
-    res.json({ success: true, token, phone });
+    res.json({ success: true, token, phone: maskPhone(phone) });
   } catch (err) {
     logger.error('login error:', err);
     next(err);

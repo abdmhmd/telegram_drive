@@ -9,7 +9,7 @@ export async function listItems(req, res, next) {
   try {
     const parentId = req.query.parent_id || null;
     const items = await fileManager.getItems(parentId, req.user.phone);
-    const breadcrumbs = parentId ? await fileManager.getBreadcrumbs(parentId) : [{ id: 'root', name: 'Root' }];
+    const breadcrumbs = parentId ? await fileManager.getBreadcrumbs(parentId, req.user.phone) : [{ id: 'root', name: 'Root' }];
     const stats = await fileManager.getStorageStats(req.user.phone);
     res.json({ items, breadcrumbs, stats });
   } catch (err) {
@@ -47,7 +47,7 @@ export async function uploadFile(req, res, next) {
 
 export async function downloadFile(req, res, next) {
   try {
-    const item = await fileManager.getItem(req.params.fileId);
+    const item = await fileManager.getItem(req.params.fileId, req.user.phone);
     if (!item || item.is_folder) {
       return res.status(404).json({ error: 'File not found' });
     }
@@ -75,7 +75,7 @@ export async function downloadFile(req, res, next) {
 
 export async function previewFile(req, res, next) {
   try {
-    const item = await fileManager.getItem(req.params.fileId);
+    const item = await fileManager.getItem(req.params.fileId, req.user.phone);
     if (!item || item.is_folder) {
       return res.status(404).json({ error: 'File not found' });
     }
@@ -103,7 +103,7 @@ export async function previewFile(req, res, next) {
 
 export async function deleteItem(req, res, next) {
   try {
-    const item = await fileManager.getItem(req.params.fileId);
+    const item = await fileManager.getItem(req.params.fileId, req.user.phone);
     if (!item) {
       return res.status(404).json({ error: 'Item not found' });
     }
@@ -116,7 +116,7 @@ export async function deleteItem(req, res, next) {
 
 export async function updateItem(req, res, next) {
   try {
-    const item = await fileManager.getItem(req.params.fileId);
+    const item = await fileManager.getItem(req.params.fileId, req.user.phone);
     if (!item) {
       return res.status(404).json({ error: 'Item not found' });
     }
@@ -139,7 +139,7 @@ export async function updateItem(req, res, next) {
 
 export async function createShareLink(req, res, next) {
   try {
-    const item = await fileManager.getItem(req.params.fileId);
+    const item = await fileManager.getItem(req.params.fileId, req.user.phone);
     if (!item || item.is_folder) {
       return res.status(404).json({ error: 'File not found' });
     }

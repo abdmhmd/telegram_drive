@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { authApi } from '../api';
 import useStore from '../store/useStore';
+import { maskPhone } from '../utils/helpers';
 import { Key, Smartphone, Shield, ArrowRight, Loader2 } from 'lucide-react';
 
 export default function Setup() {
@@ -150,7 +151,7 @@ export default function Setup() {
           {step === 1 && (
             <form onSubmit={handleVerifyCode}>
               <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">Enter verification code</h2>
-              <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">Code sent to {form.phone}</p>
+              <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">Code sent to {maskPhone(form.phone)}</p>
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Code</label>
                 <input

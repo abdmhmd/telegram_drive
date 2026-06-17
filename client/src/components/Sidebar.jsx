@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import useStore from '../store/useStore';
 import { authApi } from '../api';
+import { maskPhone } from '../utils/helpers';
 import { useNavigate } from 'react-router-dom';
 import { Cloud, HardDrive, LogOut, Database, FolderOpen, X, Moon, Sun } from 'lucide-react';
 
@@ -73,7 +74,7 @@ export default function Sidebar() {
             </div>
             <div className="min-w-0">
               <h2 className="font-semibold text-gray-900 dark:text-gray-100 text-sm truncate">Telegram Drive</h2>
-              <p className="text-xs text-gray-400 truncate max-w-[140px]">{phone}</p>
+              <p className="text-xs text-gray-400 truncate max-w-[140px]">{maskPhone(phone)}</p>
             </div>
           </div>
         </div>

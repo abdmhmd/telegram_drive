@@ -1,7 +1,14 @@
 import jwt from 'jsonwebtoken';
 import logger from '../config/logger.js';
 
-const JWT_SECRET = process.env.JWT_SECRET || 'default-secret-change-me';
+const JWT_SECRET = process.env.JWT_SECRET;
+if (!JWT_SECRET) {
+  if (process.env.NODE_ENV === 'production') {
+    throw new Error('JWT_SECRET environment variable is required in production');
+  }
+  logger.warn('JWT_SECRET not set. Using insecure default for development only.');
+}
+const JWT_SECRET_VALUE = JWT_SECRET || 'dev-secret-do-not-use-in-production';
 
 export function authMiddleware(req, res, next) {
   const authHeader = req.headers.authorization;
@@ -11,7 +18,7 @@ export function authMiddleware(req, res, next) {
 
   const token = authHeader.split(' ')[1];
   try {
-    const decoded = jwt.verify(token, JWT_SECRET);
+    const decoded = jwt.verify(token, JWT_SECRET_VALUE);
     req.user = decoded;
     next();
   } catch (err) {
@@ -21,5 +28,5 @@ export function authMiddleware(req, res, next) {
 }
 
 export function generateToken(phone) {
-  return jwt.sign({ phone }, JWT_SECRET, { expiresIn: '30d' });
+  return jwt.sign({ phone }, JWT_SECRET_VALUE, { expiresIn: '30d' });
 }
