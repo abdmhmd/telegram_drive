@@ -25,11 +25,12 @@ if (sslEnabled) {
 }
 
 logger.info('Configuring database connection pool');
-logger.info(`  Host: ${DB_HOST}`);
-logger.info(`  Port: ${DB_PORT}`);
-logger.info(`  Database: ${DB_NAME}`);
-logger.info(`  User: ${DB_USER}`);
-logger.info(`  SSL: ${sslEnabled ? 'enabled' : 'disabled'}`);
+logger.info(`  DB_HOST: ${DB_HOST}`);
+logger.info(`  DB_USER: ${DB_USER}`);
+logger.info(`  DB_NAME: ${DB_NAME}`);
+logger.info(`  DB_PORT: ${DB_PORT}`);
+logger.info(`  DB_SSL: ${sslEnabled}`);
+logger.info(`  DB_PASSWORD: ${DB_PASSWORD ? '[SET]' : '[NOT SET]'}`);
 
 const pool = mysql.createPool({
   host: DB_HOST,
@@ -45,6 +46,18 @@ const pool = mysql.createPool({
 });
 
 logger.info('Connection pool created');
+
+(async () => {
+  try {
+    const conn = await pool.getConnection();
+    logger.info('✅ Database connection test SUCCESS');
+    conn.release();
+  } catch (err) {
+    logger.error('❌ Database connection test FAILED');
+    logger.error('   Error code:', err.code);
+    logger.error('   Error message:', err.message);
+  }
+})();
 
 export async function testDatabaseConnection() {
   logger.info('Testing database connection...');
