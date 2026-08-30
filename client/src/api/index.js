@@ -1,6 +1,13 @@
 import axios from 'axios';
 
-const BASE_URL = import.meta.env.VITE_API_BASE_URL || '/api';
+// Hard fallback so the URL can never be undefined even if the env var is missing.
+const BASE_URL =
+  import.meta.env.VITE_API_BASE_URL ||
+  'https://teledrivebackend.pxxlspace.cv/api';
+
+// eslint-disable-next-line no-console
+console.log('[API] BASE_URL =', BASE_URL);
+console.log('[API] VITE_API_BASE_URL =', import.meta.env.VITE_API_BASE_URL);
 
 const api = axios.create({
   baseURL: BASE_URL,
@@ -8,13 +15,18 @@ const api = axios.create({
     'Content-Type': 'application/json',
   },
 });
-// ss
 
 api.interceptors.request.use((config) => {
   const token = localStorage.getItem('token');
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
   }
+  // Log the exact full URL axios will hit (method + baseURL + relative url).
+  console.log(
+    `[API REQUEST] ${(config.method || 'GET').toUpperCase()} ${
+      config.baseURL || ''
+    }${config.url || ''}`
+  );
   return config;
 });
 
