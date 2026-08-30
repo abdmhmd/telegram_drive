@@ -53,7 +53,7 @@ async function loadSessions() {
   for (const session of sessions) {
     try {
       await telegramService.loadSession(session.user_phone, session.session_string, session.api_id, session.api_hash);
-      logger.info(`Session loaded for ${session.user_phone}`);
+      logger.info(`Session loadedd for ${session.user_phone}`);
     } catch (err) {
       logger.warn(`Failed to load session for ${session.user_phone}: ${err.message}`);
     }
