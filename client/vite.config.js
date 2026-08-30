@@ -7,7 +7,7 @@ export default defineConfig({
     port: 5173,
     proxy: {
       '/api': {
-        target: 'https://teledrivebackend.pxxl.click',
+        target: 'http://localhost:3100',
         changeOrigin: true,
       },
     },
