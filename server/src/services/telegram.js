@@ -7,6 +7,19 @@ import path from 'path';
 import logger from '../config/logger.js';
 import fs from 'fs';
 
+function serializeFileReference(fileReference) {
+  if (fileReference === null || fileReference === undefined) return null;
+  if (Buffer.isBuffer(fileReference) || fileReference instanceof Uint8Array) {
+    return Buffer.from(fileReference).toString('base64');
+  }
+  if (typeof fileReference === 'object' && typeof fileReference.value !== 'undefined') {
+    return serializeFileReference(fileReference.value);
+  }
+  if (typeof fileReference === 'number') {
+    return String(fileReference);
+  }
+  return String(fileReference);
+}
 
 class TelegramService {
   constructor() {
@@ -194,7 +207,7 @@ class TelegramService {
       telegramMessageId: messageId,
       documentId: doc.id?.toString(),
       accessHash: doc.accessHash?.toString(),
-      fileReference: doc.fileReference?.toString('base64'),
+      fileReference: serializeFileReference(doc.fileReference),
       dcId: doc.dcId,
     };
   }
@@ -249,10 +262,6 @@ class TelegramService {
         id: [Number(messageId)],
       })
     );
-  }
-
-  getStorageInfo(phone) {
-    return { total: 0, used: 0, free: 0 };
   }
 }
 

@@ -64,6 +64,21 @@ function openSQLite() {
 // ---------------------------------------------------------------------------
 
 async function connectMySQL() {
+  let ssl = undefined;
+  if (process.env.DB_SSL === 'true') {
+    ssl = { rejectUnauthorized: true };
+    if (process.env.DB_CA_PATH) {
+      try {
+        ssl.ca = fs.readFileSync(process.env.DB_CA_PATH);
+      } catch (err) {
+        console.warn(`Failed to read CA file at ${process.env.DB_CA_PATH}: ${err.message}`);
+      }
+    } else if ((process.env.DB_HOST || '').endsWith('.tidbcloud.com')) {
+      console.warn('DB_CA_PATH is not set for TiDB Cloud. Falling back to non-strict TLS so the migration can run.');
+      ssl = { rejectUnauthorized: false };
+    }
+  }
+
   const pool = mysql.createPool({
     host: process.env.DB_HOST || 'localhost',
     user: process.env.DB_USER || 'root',
@@ -71,6 +86,7 @@ async function connectMySQL() {
     database: process.env.DB_NAME || 'telegram_drive',
     port: parseInt(process.env.DB_PORT || '3306', 10),
     charset: 'utf8mb4',
+    ssl,
     waitForConnections: true,
     connectionLimit: 5,
   });

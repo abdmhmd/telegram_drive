@@ -38,6 +38,21 @@ const DB_CONFIG = {
   charset: 'utf8mb4',
 };
 
+let ssl = undefined;
+if (process.env.DB_SSL === 'true') {
+  ssl = { rejectUnauthorized: true };
+  if (process.env.DB_CA_PATH) {
+    try {
+      ssl.ca = fs.readFileSync(process.env.DB_CA_PATH);
+    } catch (err) {
+      console.warn(`Failed to read CA file at ${process.env.DB_CA_PATH}: ${err.message}`);
+    }
+  } else if ((process.env.DB_HOST || '').endsWith('.tidbcloud.com')) {
+    console.warn('DB_CA_PATH is not set for TiDB Cloud. Falling back to non-strict TLS so the migration can run.');
+    ssl = { rejectUnauthorized: false };
+  }
+}
+
 // ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------
@@ -80,7 +95,7 @@ function loadSQLite() {
 // ---------------------------------------------------------------------------
 
 async function connectMySQL() {
-  const pool = mysql.createPool({ ...DB_CONFIG, waitForConnections: true, connectionLimit: 5 });
+  const pool = mysql.createPool({ ...DB_CONFIG, ssl, waitForConnections: true, connectionLimit: 5 });
 
   const [rows] = await pool.query('SELECT 1 AS ok');
   console.log(`  MySQL server    : ${rows[0].ok === 1 ? 'connected' : 'FAILED'}`);

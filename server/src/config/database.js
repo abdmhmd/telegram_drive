@@ -8,7 +8,7 @@ const {
   DB_PASSWORD = '',
   DB_NAME = 'telegram_drive',
   DB_PORT = '3306',
-  DB_SSL = 'true',
+  DB_SSL = 'false',
 } = process.env;
 
 const sslEnabled = DB_SSL === 'true';
@@ -20,7 +20,13 @@ if (sslEnabled) {
       ssl.ca = fs.readFileSync(process.env.DB_CA_PATH);
     } catch (err) {
       logger.warn(`Failed to read CA file at ${process.env.DB_CA_PATH}: ${err.message}`);
+      logger.warn('Falling back to system CA store for TLS verification');
     }
+  } else if (DB_HOST.endsWith('.tidbcloud.com')) {
+    logger.warn('DB_CA_PATH is not set. TiDB Cloud requires a CA certificate for secure connections.');
+    logger.warn('Download the CA certificate from the TiDB Cloud console and set DB_CA_PATH to its location.');
+    logger.warn('Falling back to unverified (non-strict) TLS so the server can start; set DB_CA_PATH for secure connections.');
+    ssl = { rejectUnauthorized: false };
   }
 }
 

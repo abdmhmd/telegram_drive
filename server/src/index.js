@@ -1,4 +1,4 @@
-import dotenv from 'dotenv';
+import './loadEnv.js';
 import express from 'express';
 import cors from 'cors';
 import morgan from 'morgan';
@@ -12,10 +12,6 @@ import shareRoutes from './routes/shares.js';
 import { query, initializeDatabase, testDatabaseConnection } from './config/database.js';
 import logger from './config/logger.js';
 import telegramService from './services/telegram.js';
-
-if (process.env.NODE_ENV !== 'production') {
-  dotenv.config();
-}
 
 process.on('uncaughtException', (err) => {
   logger.error('Uncaught exception:', err);
@@ -65,12 +61,22 @@ async function loadSessions() {
   logger.info(`Loaded ${sessions.length} session(s)`);
 }
 
+async function waitForDatabase(attempts = 5, delayMs = 5000) {
+  for (let attempt = 1; attempt <= attempts; attempt++) {
+    const connected = await testDatabaseConnection();
+    if (connected) return true;
+    logger.error(`Database connection attempt ${attempt}/${attempts} failed. Retrying in ${delayMs / 1000}s...`);
+    await new Promise((resolve) => setTimeout(resolve, delayMs));
+  }
+  logger.error('Fatal: Cannot connect to database after multiple attempts. Exiting.');
+  return false;
+}
+
 async function start() {
   logger.info('Starting server...');
 
-  const connected = await testDatabaseConnection();
+  const connected = await waitForDatabase();
   if (!connected) {
-    logger.error('Fatal: Cannot connect to database. Exiting.');
     process.exit(1);
   }
 
