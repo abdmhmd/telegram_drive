@@ -3,7 +3,7 @@
   publish = "dist"
 
 [build.environment]
-  VITE_API_BASE_URL = "https://teledrivebackend.pxxl.click/api"
+  VITE_API_BASE_URL = "https://teledrivebackend.pxxlspace.cv/api"
 
 [[redirects]]
   from = "/*"

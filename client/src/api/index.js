@@ -3,7 +3,7 @@ import axios from 'axios';
 // Hard fallback so the URL can never be undefined even if the env var is missing.
 const BASE_URL =
   import.meta.env.VITE_API_BASE_URL ||
-  'https://teledrivebackend.pxxlspace.cv/api';
+  '/api';
 
 // eslint-disable-next-line no-console
 console.log('[API] BASE_URL =', BASE_URL);
